@@ -1,0 +1,204 @@
+
+CREATE DATABASE IF NOT EXISTS steam_catalog_lab
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE steam_catalog_lab;
+
+CREATE TABLE Developers (
+  developer_id INT PRIMARY KEY AUTO_INCREMENT,
+  developer_name VARCHAR(100) NOT NULL,
+  country VARCHAR(50)
+) ENGINE=InnoDB;
+
+CREATE TABLE Publishers (
+  publisher_id INT PRIMARY KEY AUTO_INCREMENT,
+  publisher_name VARCHAR(100) NOT NULL,
+  country VARCHAR(50)
+) ENGINE=InnoDB;
+
+CREATE TABLE Tags (
+  tag_id INT PRIMARY KEY AUTO_INCREMENT,
+  tag_name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE Platforms (
+  platform_id INT PRIMARY KEY AUTO_INCREMENT,
+  platform_name VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE Games (
+  app_id INT PRIMARY KEY,
+  game_name VARCHAR(200) NOT NULL,
+  developer_id INT NOT NULL,
+  publisher_id INT NOT NULL,
+  release_date DATE,
+  is_available BOOLEAN NOT NULL,
+  CONSTRAINT fk_games_developers FOREIGN KEY (developer_id)
+    REFERENCES Developers(developer_id),
+  CONSTRAINT fk_games_publishers FOREIGN KEY (publisher_id)
+    REFERENCES Publishers(publisher_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE GameTags (
+  app_id INT NOT NULL,
+  tag_id INT NOT NULL,
+  PRIMARY KEY (app_id, tag_id),
+  CONSTRAINT fk_gametags_games FOREIGN KEY (app_id) REFERENCES Games(app_id),
+  CONSTRAINT fk_gametags_tags FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE GamePlatforms (
+  app_id INT NOT NULL,
+  platform_id INT NOT NULL,
+  PRIMARY KEY (app_id, platform_id),
+  CONSTRAINT fk_gameplatforms_games FOREIGN KEY (app_id) REFERENCES Games(app_id),
+  CONSTRAINT fk_gameplatforms_platforms FOREIGN KEY (platform_id) REFERENCES Platforms(platform_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE Prices (
+  price_id INT PRIMARY KEY AUTO_INCREMENT,
+  app_id INT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(10) NOT NULL,
+  price_date DATE NOT NULL,
+  CONSTRAINT chk_price_nonnegative CHECK (price >= 0),
+  CONSTRAINT fk_prices_games FOREIGN KEY (app_id) REFERENCES Games(app_id)
+) ENGINE=InnoDB;
+
+
+ALTER TABLE Games ADD COLUMN demo_note VARCHAR(50) NULL;
+ALTER TABLE Games MODIFY COLUMN demo_note VARCHAR(100) NULL;
+ALTER TABLE Games DROP COLUMN demo_note;
+
+
+INSERT INTO Developers (developer_id, developer_name, country) VALUES
+  (1, 'Valve', 'USA'),
+  (2, 'CD PROJEKT RED', 'Poland'),
+  (3, 'ConcernedApe', 'USA'),
+  (4, 'Re-Logic', 'USA'),
+  (5, 'Team Cherry', 'Australia'),
+  (6, 'Supergiant Games', 'USA');
+
+INSERT INTO Publishers (publisher_id, publisher_name, country) VALUES
+  (1, 'Valve', 'USA'),
+  (2, 'CD PROJEKT RED', 'Poland'),
+  (3, 'ConcernedApe', 'USA'),
+  (4, 'Re-Logic', 'USA'),
+  (5, 'Team Cherry', 'Australia'),
+  (6, 'Supergiant Games', 'USA');
+
+INSERT INTO Games (app_id, game_name, developer_id, publisher_id, release_date, is_available) VALUES
+  (730, 'Counter-Strike 2', 1, 1, '2023-09-27', 1),
+  (620, 'Portal 2', 1, 1, '2011-04-19', 1),
+  (1091500, 'Cyberpunk 2077', 2, 2, '2020-12-10', 1),
+  (413150, 'Stardew Valley', 3, 3, '2016-02-26', 1),
+  (105600, 'Terraria', 4, 4, '2011-05-16', 1),
+  (367520, 'Hollow Knight', 5, 5, '2017-02-24', 1),
+  (1145360, 'Hades', 6, 6, '2020-09-17', 1),
+  (292030, 'The Witcher 3: Wild Hunt', 2, 2, '2015-05-18', 1);
+
+INSERT INTO Tags (tag_id, tag_name) VALUES
+  (1, 'Action'),
+  (2, 'Multiplayer'),
+  (3, 'Puzzle'),
+  (4, 'RPG'),
+  (5, 'Open World'),
+  (6, 'Indie'),
+  (7, 'Adventure'),
+  (8, 'Roguelike');
+
+INSERT INTO GameTags (app_id, tag_id) VALUES
+  (730, 1),
+  (730, 2),
+  (620, 3),
+  (620, 7),
+  (1091500, 4),
+  (1091500, 5),
+  (413150, 6),
+  (413150, 4),
+  (105600, 6),
+  (105600, 7),
+  (367520, 6),
+  (367520, 7),
+  (1145360, 1),
+  (1145360, 8),
+  (292030, 4),
+  (292030, 5);
+
+INSERT INTO Platforms (platform_id, platform_name) VALUES
+  (1, 'Windows'),
+  (2, 'macOS'),
+  (3, 'Linux');
+
+INSERT INTO GamePlatforms (app_id, platform_id) VALUES
+  (730, 1),
+  (620, 1),
+  (620, 2),
+  (620, 3),
+  (1091500, 1),
+  (413150, 1),
+  (413150, 2),
+  (413150, 3),
+  (105600, 1),
+  (105600, 2),
+  (105600, 3),
+  (367520, 1),
+  (367520, 2),
+  (367520, 3),
+  (1145360, 1),
+  (292030, 1);
+
+INSERT INTO Prices (price_id, app_id, price, currency, price_date) VALUES
+  (1, 730, 0, 'EUR', '2026-10-20'),
+  (2, 620, 9.75, 'EUR', '2026-10-20'),
+  (3, 1091500, 49.99, 'EUR', '2026-10-20'),
+  (4, 413150, 13.99, 'EUR', '2026-10-20'),
+  (5, 105600, 9.99, 'EUR', '2026-10-20'),
+  (6, 367520, 14.99, 'EUR', '2026-10-20'),
+  (7, 1145360, 24.99, 'EUR', '2026-10-20'),
+  (8, 292030, 29.99, 'EUR', '2026-10-20');
+
+
+UPDATE Games SET game_name = 'Portal 2 (demo)' WHERE app_id = 620;
+SELECT app_id, game_name FROM Games WHERE app_id = 620;
+UPDATE Games SET game_name = 'Portal 2' WHERE app_id = 620;
+
+INSERT INTO Tags (tag_id, tag_name) VALUES (999, 'Temporary Demo Tag');
+DELETE FROM Tags WHERE tag_id = 999;
+
+CREATE USER IF NOT EXISTS 'steam_analyst'@'localhost'
+  IDENTIFIED BY '363pWfa!';
+GRANT SELECT ON steam_catalog_lab.* TO 'steam_analyst'@'localhost';
+
+CREATE USER IF NOT EXISTS 'steam_operator'@'localhost'
+  IDENTIFIED BY 'nBw54!nw4';
+GRANT SELECT, INSERT, UPDATE ON steam_catalog_lab.* TO 'steam_operator'@'localhost';
+
+CREATE USER IF NOT EXISTS 'steam_admin'@'localhost'
+  IDENTIFIED BY 'Cgfi76ty/';
+GRANT ALL PRIVILEGES ON steam_catalog_lab.* TO 'steam_admin'@'localhost';
+
+
+DESCRIBE Developers;
+DESCRIBE Publishers;
+DESCRIBE Games;
+DESCRIBE Tags;
+DESCRIBE GameTags;
+DESCRIBE Platforms;
+DESCRIBE GamePlatforms;
+DESCRIBE Prices;
+
+
+SELECT 'Developers' AS table_name, COUNT(*) AS row_count FROM Developers
+UNION ALL SELECT 'Publishers', COUNT(*) FROM Publishers
+UNION ALL SELECT 'Games', COUNT(*) FROM Games
+UNION ALL SELECT 'Tags', COUNT(*) FROM Tags
+UNION ALL SELECT 'GameTags', COUNT(*) FROM GameTags
+UNION ALL SELECT 'Platforms', COUNT(*) FROM Platforms
+UNION ALL SELECT 'GamePlatforms', COUNT(*) FROM GamePlatforms
+UNION ALL SELECT 'Prices', COUNT(*) FROM Prices;
+
+SELECT g.app_id, g.game_name, d.developer_name, p.publisher_name
+FROM Games AS g
+JOIN Developers AS d ON g.developer_id = d.developer_id
+JOIN Publishers AS p ON g.publisher_id = p.publisher_id
+ORDER BY g.game_name;
